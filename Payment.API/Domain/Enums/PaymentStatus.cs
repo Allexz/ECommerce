@@ -11,6 +11,8 @@ public class PaymentStatus : Enumeration
     public static PaymentStatus Completed = new(2, "Completed");
     public static PaymentStatus Failed = new(3, "Failed");
     public static PaymentStatus Refunded = new(4, "Refunded");
+    public static PaymentStatus Cancelled = new(5, "Cancelled");
+    public static PaymentStatus Fraudulent = new(6, "Fraudulent");
 
     public bool IsCompleted => Completed.Equals(this);
 
@@ -22,6 +24,8 @@ public class PaymentStatus : Enumeration
             "Completed" => Completed,
             "Failed" => Failed,
             "Refunded" => Refunded,
+            "Cancelled" => Cancelled,
+            "Fraudulent" => Fraudulent,
             _ => throw new PaymentDomainException($"Status de pagamento inválido: {name}")
         };
     }

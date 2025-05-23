@@ -15,6 +15,7 @@
     <Folder Include="Application\DTOs\" />
     <Folder Include="Application\Services\" />
     <Folder Include="Application\Queries\" />
+    <Folder Include="Domain\Specifications\" />
     <Folder Include="Infrastructure\Data\" />
     <Folder Include="Infrastructure\Messaging\" />
     <Folder Include="Infrastructure\Services\" />

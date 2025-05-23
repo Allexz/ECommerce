@@ -3,8 +3,5 @@
 public class PaymentDomainException : Exception
 {
     public PaymentDomainException(string message)
-        : base(message)
-    {
-        
-    }
+        : base(message) { }
 }

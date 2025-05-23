@@ -81,6 +81,26 @@ public class Payment : AggregateRoot
             throw new PaymentDomainException("Only completed payments can be refunded");
 
         _status = PaymentStatus.Refunded;
+        AddDomainEvent(new PaymentRefundedDomainEvent(Id, Amount));
+    }
+
+    // Exemplo de método faltante:
+    public void Cancel(string reason)
+    {
+        if (_status != PaymentStatus.Pending)
+            throw new PaymentDomainException("Only pending payments can be canceled");
+
+        _status = PaymentStatus.Cancelled;
+        AddDomainEvent(new PaymentCancelledDomainEvent(Id, reason));
+    }
+
+    public void MarkAsFraudulent()
+    {
+        if (_status != PaymentStatus.Pending)
+            throw new PaymentDomainException("Only pending payments can be marked as fraudulent");
+        _status = PaymentStatus.Fraudulent;
+
+        AddDomainEvent(new PaymentFraudulentDomainEvent(Id, Amount));
     }
 
     // Métodos internos para o repositório
