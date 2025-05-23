@@ -103,6 +103,14 @@ public class Payment : AggregateRoot
         AddDomainEvent(new PaymentFraudulentDomainEvent(Id, Amount));
     }
 
+    public void Complete()
+    {
+        if (_status != PaymentStatus.Pending)
+            throw new PaymentDomainException("Only pending payments can be completed");
+        _status = PaymentStatus.Completed;
+        AddDomainEvent(new PaymentCompletedDomainEvent(Id));
+    }
+
     // Métodos internos para o repositório
     internal void UpdateStatus(PaymentStatus newStatus) => _status = newStatus;
 
