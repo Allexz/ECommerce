@@ -22,6 +22,7 @@ public class Payment : AggregateRoot
     public string Method => _paymentMethod.Name;
     public string Status => _status.ToString();
     public string LastFourDigits => _cardInfo?.LastFourDigits ?? string.Empty;
+    public int Version { get; private set; }
 
     // Construtor privado para encapsulamento
     private Payment(
@@ -30,12 +31,26 @@ public class Payment : AggregateRoot
         PaymentMethod paymentMethod,
         CreditCardInfo cardInfo = null)
     {
+        if (orderId == Guid.Empty)
+            throw new PaymentDomainException("OrderId cannot be empty");
+
+        if (amount <= 0)
+            throw new PaymentDomainException("Amount must be positive");
+
+        if (paymentMethod == null)
+            throw new PaymentDomainException("Payment method cannot be null");
+
+        if (paymentMethod == PaymentMethod.CreditCard && cardInfo == null)
+            throw new PaymentDomainException("Card info is required for credit card payments");
+
+
         OrderId = orderId;
         Amount = amount;
         this._paymentMethod = paymentMethod;
         _status = PaymentStatus.Pending;
         _createdAt = DateTime.UtcNow;
         _cardInfo = cardInfo;
+        Version = 0;
 
         AddDomainEvent(new PaymentCreatedDomainEvent(this.Id, orderId, amount, paymentMethod, _createdAt));
     }
@@ -75,13 +90,37 @@ public class Payment : AggregateRoot
             AddDomainEvent(new PaymentCompletedDomainEvent(this.Id));
     }
 
-    public void Refund()
+    public void Refund(string reason)
     {
         if (!_status.IsCompleted)
             throw new PaymentDomainException("Only completed payments can be refunded");
 
+        if (string.IsNullOrWhiteSpace(reason))
+            throw new PaymentDomainException("Reason for refund cannot be empty");
+
         _status = PaymentStatus.Refunded;
-        AddDomainEvent(new PaymentRefundedDomainEvent(Id, Amount));
+        AddDomainEvent(new PaymentRefundedDomainEvent(Id,Amount,DateTime.UtcNow,reason));
+    }
+
+    public void RequestRefund(string reason, decimal? amount = null)
+    {
+        if (_status != PaymentStatus.Completed)
+            throw new PaymentDomainException("Só pode reembolsar pagamentos completos");
+
+        if (string.IsNullOrWhiteSpace(reason))
+            throw new PaymentDomainException("Motivo é obrigatório");
+
+        var refundAmount = amount ?? Amount;  // Usa valor total se não especificado
+
+        if (refundAmount > Amount)
+            throw new PaymentDomainException("Valor não pode exceder o pago");
+
+        _status = PaymentStatus.RefundPending;
+
+        AddDomainEvent(new PaymentRefundRequestedDomainEvent(
+            Id,
+            refundAmount,
+            reason));
     }
 
     // Exemplo de método faltante:
@@ -94,13 +133,13 @@ public class Payment : AggregateRoot
         AddDomainEvent(new PaymentCancelledDomainEvent(Id, reason));
     }
 
-    public void MarkAsFraudulent()
+    public void MarkAsFraud(string reason)
     {
         if (_status != PaymentStatus.Pending)
             throw new PaymentDomainException("Only pending payments can be marked as fraudulent");
         _status = PaymentStatus.Fraudulent;
 
-        AddDomainEvent(new PaymentFraudulentDomainEvent(Id, Amount));
+        AddDomainEvent(new PaymentFraudulentDomainEvent(Id, reason));
     }
 
     public void Complete()
@@ -109,6 +148,14 @@ public class Payment : AggregateRoot
             throw new PaymentDomainException("Only pending payments can be completed");
         _status = PaymentStatus.Completed;
         AddDomainEvent(new PaymentCompletedDomainEvent(Id));
+    }
+
+    public void Rejected(string reason)
+    {
+        if (_status != PaymentStatus.Pending)
+            throw new PaymentDomainException("Only pending payments can be rejected");
+        _status = PaymentStatus.Rejected;
+        AddDomainEvent(new PaymentRejectedDomainEvent(Id,reason));
     }
 
     // Métodos internos para o repositório
@@ -125,5 +172,10 @@ public class Payment : AggregateRoot
                 // Lógica de atualização se necessário
                 break;
         }
+    }
+
+    public void UpdateVersion(int newVersion)
+    {
+        Version = newVersion;
     }
 }

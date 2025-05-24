@@ -13,6 +13,8 @@ public class PaymentStatus : Enumeration
     public static PaymentStatus Refunded = new(4, "Refunded");
     public static PaymentStatus Cancelled = new(5, "Cancelled");
     public static PaymentStatus Fraudulent = new(6, "Fraudulent");
+    public static PaymentStatus Rejected = new(7, "Rejected");
+    public static PaymentStatus RefundPending = new(8, "RefundPending");
 
     public bool IsCompleted => Completed.Equals(this);
 
@@ -26,6 +28,8 @@ public class PaymentStatus : Enumeration
             "Refunded" => Refunded,
             "Cancelled" => Cancelled,
             "Fraudulent" => Fraudulent,
+            "Rejected" => Rejected,
+            "RefundPending" => RefundPending,
             _ => throw new PaymentDomainException($"Status de pagamento inválido: {name}")
         };
     }

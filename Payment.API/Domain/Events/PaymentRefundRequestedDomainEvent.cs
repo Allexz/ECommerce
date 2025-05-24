@@ -2,9 +2,10 @@
 
 namespace Payment.API.Domain.Events;
 
-public record PaymentFraudulentDomainEvent(
+public record PaymentRefundRequestedDomainEvent(
     Guid PaymentId,
-    string reason) : IDomainEvent
+    decimal RefundAmount,
+    string Reason) : IDomainEvent
 {
     public DateTime OccurredOn => DateTime.UtcNow;
 }
