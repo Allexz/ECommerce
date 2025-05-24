@@ -177,5 +177,17 @@ public class Payment : AggregateRoot
     public void UpdateVersion(int newVersion)
     {
         Version = newVersion;
+        // Adiciona lógica de atualização de versão se necessário
+        //    public async Task UpdateAsync(Payment payment)
+        //{
+        //    var affectedRows = await _dbContext.Payments
+        //        .Where(p => p.Id == payment.Id && p.Version == payment.Version)
+        //        .ExecuteUpdateAsync(setters => setters
+        //            .SetProperty(p => p.Status, payment.Status)
+        //            .SetProperty(p => p.Version, payment.Version + 1));
+
+        //    if (affectedRows == 0)
+        //        throw new ConcurrencyException();
+        //}
     }
 }
