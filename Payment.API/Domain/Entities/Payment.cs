@@ -43,7 +43,7 @@ public class Payment : AggregateRoot
         if (paymentMethod == PaymentMethod.CreditCard && cardInfo == null)
             throw new PaymentDomainException("Card info is required for credit card payments");
 
-        bacalhau!!! teste do git
+        
         OrderId = orderId;
         Amount = amount;
         this._paymentMethod = paymentMethod;
